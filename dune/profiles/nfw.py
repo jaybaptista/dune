@@ -23,10 +23,10 @@ class NFW():
         rp: astropy.units.Quantity
             Plummer radius
         '''
-        self.a = a
-        self.rho = rho
-        self.mass = dyn_mass
-        self.rp = rp
+        self.a = a.decompose()
+        self.rho = rho.decompose()
+        self.mass = dyn_mass.decompose()
+        self.rp = rp.decompose()
 
     def nfw_potential(self, r, a=None, rho=None):
         '''
@@ -48,9 +48,13 @@ class NFW():
 
         if a is None:
             a = self.a
+        else:
+            a = a.decompose()
 
         if rho is None:
             rho = self.rho
+        else:
+            rho = rho.decompose()
 
         if type(r) != u.quantity.Quantity:
             raise ValueError('radius must be specified in astropy units')
@@ -85,9 +89,13 @@ class NFW():
         '''
         if a is None:
             a = self.a
+        else:
+            a = a.decompose()
 
         if rho is None:
             rho = self.rho
+        else:
+            rho = rho.decompose()
 
         if type(r) != u.quantity.Quantity:
             raise ValueError('radius must be specified in astropy units')
@@ -125,19 +133,29 @@ class NFW():
         '''
         if a is None:
             a = self.a
+        else:
+            a = a.decompose()
 
         if rho is None:
             rho = self.rho
+        else:
+            rho = rho.decompose()
 
         if rp is None:
             rp = self.rp
+        else:
+            rp = rp.decompose()
 
         if dyn_mass is None:
             dyn_mass = self.mass
+        else:
+            dyn_mass = dyn_mass.decompose()
 
-        integrated_units = a.unit * rho.unit * \
-            (u.m**3) * (u.s**(-2)) * (1/u.kg) * \
-            dyn_mass.unit * (rp.unit**(-3)) * r.unit
+        # integrated_units = a.unit * rho.unit * \
+        #     (u.m**3) * (u.s**(-2)) * (1/u.kg) * \
+        #     dyn_mass.unit * (rp.unit**(-3)) * r.unit
+
+        integrated_units = (a.unit * rho.unit * c.G.unit * dyn_mass.unit * rp.unit**(-3) * r.unit).decompose()
 
         r_unit = r.unit
 
@@ -145,17 +163,17 @@ class NFW():
 
         def integrand(r, dyn_mass, rp, a, rho):
             r = r * r_unit
-            
-            return -1*(self.nfw_force(r, a, rho).value)*(tmp_ssp.plummer_density(r, dyn_mass, rp).value)
+
+            return -1*((self.nfw_force(r, a, rho).decompose()).value)*((tmp_ssp.plummer_density(r, dyn_mass, rp).decompose()).value)
 
         if r.size > 1:
             _sum = [quad(integrand, r_i, np.inf, args=(
                 dyn_mass, rp, a, rho))[0] for r_i in r.value]
-            output = ((1/tmp_ssp.plummer_density(r, dyn_mass, rp))
+            output = ((1/(tmp_ssp.plummer_density(r, dyn_mass, rp)).decompose())
                       * _sum * integrated_units)
             return output
         else:
-            output = ((1/tmp_ssp.plummer_density(r, dyn_mass, rp)) * quad(integrand,
+            output = ((1/(tmp_ssp.plummer_density(r, dyn_mass, rp)).decompose()) * quad(integrand,
                       r.value, np.inf, args=(dyn_mass, rp, a, rho)) * integrated_units)
             return output[0]
 
@@ -176,7 +194,7 @@ class NFW():
         dict
             sampled radial and tangential velocities
         '''
-        
+
         # Convert units for consistency
         r = (r.to(u.kpc))
         sigma = (sigma.to(u.km / u.s)).value

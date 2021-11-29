@@ -5,6 +5,7 @@ import astropy.constants as c
 import astropy.units as u
 from scipy.stats import truncnorm
 
+
 class Hernquist():
 
     def __init__(self, a=(.01 * u.kpc), dyn_mass=500*u.solMass, rp=.2*u.kpc):
@@ -20,9 +21,9 @@ class Hernquist():
         rp: astropy.units.Quantity
             Plummer radius
         '''
-        self.a = a
-        self.mass = dyn_mass
-        self.rp = rp
+        self.a = a.decompose()
+        self.mass = dyn_mass.decompose()
+        self.rp = rp.decompose()
 
     def hernquist_potential(self, r, a=None, dyn_mass=None):
         '''
@@ -42,9 +43,13 @@ class Hernquist():
 
         if a is None:
             a = self.a
-        
+        else:
+            a = a.decompose()
+
         if dyn_mass is None:
-          dyn_mass = self.mass
+            dyn_mass = self.mass
+        else:
+            dyn_mass = dyn_mass.decompose()
 
         if type(r) != u.quantity.Quantity:
             raise ValueError('radius must be specified in astropy units')
@@ -76,9 +81,13 @@ class Hernquist():
         '''
         if a is None:
             a = self.a
+        else:
+            a = a.decompose()
 
         if dyn_mass is None:
-          dyn_mass = self.mass
+            dyn_mass = self.mass
+        else:
+            dyn_mass = dyn_mass.decompose()
 
         if type(r) != u.quantity.Quantity:
             raise ValueError('radius must be specified in astropy units')
@@ -114,83 +123,42 @@ class Hernquist():
         '''
         if a is None:
             a = self.a
-
-
-        if rp is None:
-            rp = self.rp
+        else:
+            a = a.decompose()
 
         if dyn_mass is None:
             dyn_mass = self.mass
+        else:
+            dyn_mass = dyn_mass.decompose()
 
-        integrated_units = a.unit * \
-            (u.m**3) * (u.s**(-2)) * (1/u.kg) * \
-            dyn_mass.unit * (rp.unit**(-3)) * r.unit
+        if rp is None:
+            rp = self.rp
+        else:
+            rp = rp.decompose()
+
+        # integrated_units = (c.G.unit * dyn_mass.unit * rp.unit**(-2) * r.unit).decompose()
+        self.integrated_units = None
 
         r_unit = r.unit
 
+        tmp_ssp = PlummerSampler()
+
         def integrand(r, dyn_mass, rp, a):
             r = r * r_unit
-            return -1*(self.hernquist_force(r, a, dyn_mass).value)*(PlummerSampler.plummer_density(r, dyn_mass, rp).value)
+            hq_force = (self.hernquist_force(r, a, dyn_mass).decompose())
+            plum_density = (tmp_ssp.plummer_density(r, dyn_mass, rp).decompose())
+
+            self.integrated_units = hq_force.unit * plum_density.unit * r_unit
+
+            return -1*(hq_force.value)*(plum_density.value)
 
         if r.size > 1:
             _sum = [quad(integrand, r_i, np.inf, args=(
                 dyn_mass, rp, a))[0] for r_i in r.value]
-            output = ((1/PlummerSampler.plummer_density(r, dyn_mass, rp))
-                      * _sum * integrated_units)
+            output = ((1/(tmp_ssp.plummer_density(r, dyn_mass, rp).decompose()))
+                      * _sum * self.integrated_units)
             return output
         else:
-            output = ((1/PlummerSampler.plummer_density(r, dyn_mass, rp)) * quad(integrand,
-                      r.value, np.inf, args=(dyn_mass, rp, a)) * integrated_units)
+            output = ((1/(tmp_ssp.plummer_density(r, dyn_mass, rp)).decompose()) * quad(integrand,
+                      r.value, np.inf, args=(dyn_mass, rp, a)) * self.integrated_units)
             return output[0]
-
-    def sample_velocity(self, r, sigma, with_units=False):
-        '''
-        Evaluates the potential at a given radius
-        Parameters
-        ----------
-        r: astropy.units.Quantity
-            radius to evaluate potential
-        sigma: astropy.units.Quantity
-            velocity dispersion
-        with_units: boolean (default False)
-            convert to astropy quantity in units of km/s
-
-        Returns
-        -------
-        dict
-            sampled radial and tangential velocities
-        '''
-        
-        # Convert units for consistency
-        r = (r.to(u.kpc))
-        sigma = (sigma.to(u.km / u.s)).value
-
-        v = {
-            'vr': [],
-            'vt': []
-        }
-
-        for i in np.arange(r.size):
-
-            v_esc = (
-                (2*abs(self.hernquist_potential(r[i])))**(1/2)).to(u.km / u.s).value
-
-            a, b = -1*v_esc/sigma[i], v_esc/sigma[i]
-
-            # Sample from a truncated normal distribution s.t. we ignore energies that launch star out of system
-            vr = truncnorm.rvs(a, b, scale=sigma[i], loc=0) * u.km / u.s
-
-            # Using whatever energy we have left from the prior drawn sample, select a valid tangential velocity
-            max_vt = ((2*abs(self.hernquist_potential(r[i])) -
-                       (vr**2))**(1/2)).to(u.km / u.s).value
-            vt = truncnorm.rvs(-1*max_vt/sigma[i], max_vt /
-                               sigma[i], scale=sigma[i], loc=0) * u.km / u.s
-
-            if (not with_units):
-                vr = vr.value
-                vt = vt.value
-
-            v['vr'].append(vr)
-            v['vt'].append(vt)
-
-        return v
