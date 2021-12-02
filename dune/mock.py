@@ -34,4 +34,3 @@ def GeneratePlummerHQ(N, rp, a, mass):
                            coords['r'], np.sqrt(sigma))
 
     return {**coords, **coords_xyz, **vels}
-

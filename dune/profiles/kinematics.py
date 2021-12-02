@@ -3,7 +3,7 @@ import astropy.constants as c
 import astropy.units as u
 from scipy.stats import truncnorm
 
-def VelocitySampler(potential, r, sigma, with_units=False, with_xyz=False):
+def VelocitySampler(potential, r, sigma, with_units=False):
         '''
         Evaluates the potential at a given radius
         Parameters
@@ -29,7 +29,11 @@ def VelocitySampler(potential, r, sigma, with_units=False, with_xyz=False):
 
         v = {
             'vr': [],
-            'vt': []
+            'vt': [],
+            'vx': [],
+            'vy': [],
+            'vz': [],
+            'vd': sigma
         }
 
         for i in np.arange(r.size):
@@ -52,7 +56,17 @@ def VelocitySampler(potential, r, sigma, with_units=False, with_xyz=False):
                 vr = vr.value
                 vt = vt.value
 
+
             v['vr'].append(vr)
             v['vt'].append(vt)
+
+            v_length = (vr**2 + vt**2)**(1/2)
+
+            v_xyz = np.random.normal(size=3)
+            v_xyz = (v_length * v_xyz) / np.linalg.norm(v_xyz, axis=0)
+
+            v['vx'].append(v_xyz[0])
+            v['vy'].append(v_xyz[1])
+            v['vz'].append(v_xyz[2])
 
         return v

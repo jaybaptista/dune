@@ -65,6 +65,10 @@ class NFW():
         if (type(rho) != u.quantity.Quantity):
             raise ValueError('value must be specified in astropy units')
 
+        # factor = -4*np.pi*c.G*rho*(a**2)
+        # ratio = r/a
+        # return factor * np.log(1 + ratio) / ratio
+
         factor = -4*np.pi*c.G*rho*(a**2)
         ratio = r/a
 
@@ -106,9 +110,9 @@ class NFW():
         if (type(rho) != u.quantity.Quantity):
             raise ValueError('value must be specified in astropy units')
 
-        factor = 4*np.pi*c.G*rho*(a**2)
+        factor = 4*np.pi*c.G*rho*(a**3)
         ratio = r/a
-        return factor * ((1/(r*(ratio+1))) - ((1/(ratio * r)) * np.log(1 + ratio)))
+        return -1*factor*((r+a)*np.log(1+ratio) - r)/((r+a)*r**2)
 
     def get_dispersion(self, r, a=None, rho=None, dyn_mass=None, rp=None):
         '''
@@ -150,10 +154,6 @@ class NFW():
             dyn_mass = self.mass
         else:
             dyn_mass = dyn_mass.decompose()
-
-        # integrated_units = a.unit * rho.unit * \
-        #     (u.m**3) * (u.s**(-2)) * (1/u.kg) * \
-        #     dyn_mass.unit * (rp.unit**(-3)) * r.unit
 
         integrated_units = (a.unit * rho.unit * c.G.unit * dyn_mass.unit * rp.unit**(-3) * r.unit).decompose()
 
@@ -201,7 +201,8 @@ class NFW():
 
         v = {
             'vr': [],
-            'vt': []
+            'vt': [],
+            'vd': sigma
         }
 
         for i in np.arange(r.size):

@@ -136,7 +136,6 @@ class Hernquist():
         else:
             rp = rp.decompose()
 
-        # integrated_units = (c.G.unit * dyn_mass.unit * rp.unit**(-2) * r.unit).decompose()
         self.integrated_units = None
 
         r_unit = r.unit
