@@ -21,16 +21,16 @@ def GeneratePlummerNFW(N, rp, a, rho, mass):
     return {**coords, **coords_xyz, **vels}
 
 
-def GeneratePlummerHQ(N, rp, a, mass):
+def GenerateHernquist(N, a, mass):
     # Sample stars and initialize DM profile
-    ssp = PlummerSampler()
-    coords = ssp.generate_sph(N, rp)
-    coords_xyz = ssp.convert_to_cartesian(coords)
-    hq_profile = Hernquist(a, mass, rp)
+    hq_profile = Hernquist(a, mass)
+    coords     = hq_profile.generate_sph(N)
+    coords_xyz = hq_profile.convert_to_cartesian(coords)
 
     # Get kinematics
     sigma = hq_profile.get_dispersion(coords['r'])
+    print(abs(sigma))
     vels = VelocitySampler(hq_profile.hernquist_potential,
-                           coords['r'], np.sqrt(sigma))
+                           coords['r'], np.sqrt(abs(sigma)))
 
     return {**coords, **coords_xyz, **vels}

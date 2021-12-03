@@ -42,8 +42,7 @@ if st.session_state.type == 'NFW':
     data = mock.GeneratePlummerNFW(st.session_state.N, st.session_state.rp *
                                    u.kpc, st.session_state.a * u.kpc, rho, st.session_state.mass * u.M_sun)
 elif st.session_state.type == 'Hernquist':
-    data = mock.GeneratePlummerHQ(st.session_state.N, st.session_state.rp *
-                                   u.kpc, st.session_state.a * u.kpc, st.session_state.mass * u.M_sun)
+    data = mock.GenerateHernquist(st.session_state.N, st.session_state.a * u.kpc, st.session_state.mass * u.M_sun)
 
 
 df = pd.DataFrame(data)
@@ -64,15 +63,15 @@ fig.update_traces(marker_size=5)
 fig.update_layout(coloraxis_colorbar=dict(title="V_r [km/s]"))
 st.plotly_chart(fig)
 
-fig_analytics, axs = plt.subplots(3, 2, figsize=(10,15))
+fig_analytics, axs = plt.subplots(3, 2, figsize=(9,14))
 
-axs[0,0].hist(df.vd, histtype='step')
-axs[1,0].hist(df.vt, histtype='step')
-axs[2,0].hist(df.vr, histtype='step')
+axs[0,0].hist(df.vd, histtype='step', color='k')
+axs[1,0].hist(df.vt, histtype='step', color='k')
+axs[2,0].hist(df.vr, histtype='step', color='k')
 
-axs[0,1].scatter(df.r, df.vd, c='dodgerblue')
-axs[1,1].scatter(df.r, df.vt, c='dodgerblue')
-axs[2,1].scatter(df.r, df.vr, c='dodgerblue')
+axs[0,1].scatter(df.r, df.vd, c='k', alpha=.2)
+axs[1,1].scatter(df.r, df.vt, c='k', alpha=.2)
+axs[2,1].scatter(df.r, df.vr, c='k', alpha=.2)
 
 axs[0,1].set_xlabel('r [kpc]')
 axs[1,1].set_xlabel('r [kpc]')
@@ -86,20 +85,27 @@ axs[0,1].set_ylabel('$\\sigma$ [km/s]')
 axs[1,1].set_ylabel('$V_R$ [km/s]')
 axs[2,1].set_ylabel('$V_T$ [km/s]')
 
-axs[0, 0].axvline(np.mean(df.vd), c='r')
+axs[0,0].axvline(np.mean(df.vd), c='r')
 
-axs[1, 0].axvline(0, c='k', alpha=.5)
-axs[2, 0].axvline(0, c='k', alpha=.5)
+axs[1,0].axvline(0, c='k', alpha=.5)
+axs[2,0].axvline(0, c='k', alpha=.5)
 
-axs[1, 0].axvline(np.mean(df.vr), c='r')
-axs[2, 0].axvline(np.mean(df.vt), c='r')
+axs[1,0].axvline(np.mean(df.vr), c='r')
+axs[2,0].axvline(np.mean(df.vt), c='r')
 
-axs[1, 0].axvline(np.mean(df.vr)+np.std(df.vr), c='k', alpha=.3, ls='--')
-axs[1, 0].axvline(np.mean(df.vr)-np.std(df.vr), c='k', alpha=.3, ls='--')
+axs[1,0].axvline(np.mean(df.vr)+np.std(df.vr), c='k', alpha=.3, ls='--')
+axs[1,0].axvline(np.mean(df.vr)-np.std(df.vr), c='k', alpha=.3, ls='--')
 
-axs[2, 0].axvline(np.mean(df.vt)+np.std(df.vt), c='k', alpha=.3, ls='--')
-axs[2, 0].axvline(np.mean(df.vt)-np.std(df.vt), c='k', alpha=.3, ls='--')
+axs[2,0].axvline(np.mean(df.vt)+np.std(df.vt), c='k', alpha=.3, ls='--')
+axs[2,0].axvline(np.mean(df.vt)-np.std(df.vt), c='k', alpha=.3, ls='--')
+
+axs[0,0].text(.025, 1.05, 'Velocity dispersion', transform=axs[0,0].transAxes)
+axs[0,1].text(.025, 1.05, 'Dispersion over radius', transform=axs[0,1].transAxes)
+axs[1,0].text(.025, 1.05, 'Radial velocity', transform=axs[1,0].transAxes)
+axs[1,1].text(.025, 1.05, 'Radial velocity over radius', transform=axs[1,1].transAxes)
+axs[2,0].text(.025, 1.05, 'Tangential velocity', transform=axs[2,0].transAxes)
+axs[2,1].text(.025, 1.05, 'Tangential velocity over radius', transform=axs[2,1].transAxes)
 
 fig_analytics.tight_layout()
-
 st.pyplot(fig_analytics)
+
