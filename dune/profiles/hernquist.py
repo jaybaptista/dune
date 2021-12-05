@@ -95,7 +95,7 @@ class Hernquist():
             spherical coordinates for the generated points
         '''
         return {
-        'r': self.generate_radii(N), 'theta': self.generate_theta(N), 'phi':self.generate_phi(N)
+        'r': self.generate_radii(N).to(u.kpc), 'theta': self.generate_theta(N), 'phi':self.generate_phi(N)
         }
 
     def convert_to_cartesian(self, coords):
@@ -176,7 +176,7 @@ class Hernquist():
             raise ValueError('value must be specified in astropy units')
 
 
-        pot = -1*c.G * self.enclosed_mass(r) / (r+a)
+        pot = -1*c.G * self.mass / (r+a)
 
         return pot
 
@@ -209,7 +209,7 @@ class Hernquist():
 
         force = -1*c.G * self.mass * r * (r-(2*a)) / (r+a)**4
 
-        return force
+        return force.decompose()
 
     def get_dispersion(self, r, a=None, dyn_mass=None):
         '''
@@ -253,8 +253,8 @@ class Hernquist():
             _sum = [quad(integrand, r_i, np.inf)[0] for r_i in r.value]
             output = ((1/(self.hq_density(r).decompose()))
                       * _sum * self.integrated_units)
-            return output
+            return output.to(u.km**2/u.s**2)
         else:
             output = ((1/(self.hq_density(r)).decompose()) * quad(integrand,
                       r.value, np.inf) * self.integrated_units)
-            return output[0]
+            return output[0].to(u.km**2/u.s**2)

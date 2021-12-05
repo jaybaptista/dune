@@ -1,3 +1,4 @@
+from dune.profiles import nfw
 import numpy as np
 import astropy.constants as c
 import astropy.units as u
@@ -18,7 +19,7 @@ def GeneratePlummerNFW(N, rp, a, rho, mass):
     vels = VelocitySampler(nfw_profile.nfw_potential,
                            coords['r'], np.sqrt(sigma))
 
-    return {**coords, **coords_xyz, **vels}
+    return {**coords, **coords_xyz, **vels}, nfw_profile.nfw_potential, nfw_profile.nfw_force
 
 
 def GenerateHernquist(N, a, mass):
@@ -29,8 +30,7 @@ def GenerateHernquist(N, a, mass):
 
     # Get kinematics
     sigma = hq_profile.get_dispersion(coords['r'])
-    print(abs(sigma))
     vels = VelocitySampler(hq_profile.hernquist_potential,
                            coords['r'], np.sqrt(abs(sigma)))
 
-    return {**coords, **coords_xyz, **vels}
+    return {**coords, **coords_xyz, **vels}, hq_profile.hernquist_potential, hq_profile.hernquist_force

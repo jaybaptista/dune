@@ -8,5 +8,5 @@ setuptools.setup(
     description='Dynamically Uninteresting N-body Emulator',
     packages=setuptools.find_packages(include=['dune', 'dune.*']),
     python_requires='>=3',
-    install_requires=['numpy>1.7', 'scipy', 'streamlit', 'astropy']
+    install_requires=['numpy>1.7', 'scipy', 'streamlit', 'astropy', 'plotly']
 )

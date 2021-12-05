@@ -44,7 +44,6 @@ def VelocitySampler(potential, r, sigma, with_units=False):
             a, b = -1*v_esc/sigma[i], v_esc/sigma[i]
 
             # Sample from a truncated normal distribution s.t. we ignore energies that launch star out of system
-            print(v_esc, sigma[i])
             vr = truncnorm.rvs(a, b, scale=sigma[i], loc=0) * u.km / u.s
 
             # Using whatever energy we have left from the prior drawn sample, select a valid tangential velocity
