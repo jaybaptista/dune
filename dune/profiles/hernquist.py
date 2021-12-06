@@ -142,7 +142,7 @@ class Hernquist():
             Cartesian coordinates for the generated points
         '''
 
-        coords = self.generate_sph(N, self.a)
+        coords = self.generate_sph(N)
         return self.convert_to_cartesian(coords)
 
     def enclosed_mass(self, r):
