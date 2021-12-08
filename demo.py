@@ -42,7 +42,7 @@ force = None
 
 if st.session_state.type == 'NFW':
     mock_output = mock.GeneratePlummerNFW(st.session_state.N, st.session_state.rp *
-                                   u.kpc, st.session_state.a * u.kpc, rho, st.session_state.mass * u.M_sun)
+                                   u.kpc, st.session_state.a * u.kpc, rho=rho, mass=st.session_state.mass * u.M_sun)
     data = mock_output[0]
     potential = mock_output[1]
     force = mock_output[2]

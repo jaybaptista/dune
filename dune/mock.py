@@ -7,7 +7,7 @@ from .profiles import PlummerSampler
 from .profiles import NFW, Hernquist, VelocitySampler
 
 
-def GeneratePlummerNFW(N, rp, a, mass, rho=(6.4e7 * u.M_sun / (u.kpc**3))):
+def GeneratePlummerNFW(N, rp, a, rho=(6.4e7 * u.M_sun / (u.kpc**3)), mass=500*u.solMass):
     # Sample stars and initialize DM profile
     ssp = PlummerSampler()
     coords     = ssp.generate_sph(N, rp)
