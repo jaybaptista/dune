@@ -70,7 +70,7 @@ class NFW():
         # return factor * np.log(1 + ratio) / ratio
 
         factor = -4*np.pi*c.G*rho*(a**2)
-        ratio = r/a
+        ratio = r.to(u.kpc)/a.to(u.kpc)
 
         return factor * np.log(1 + ratio) / ratio
 

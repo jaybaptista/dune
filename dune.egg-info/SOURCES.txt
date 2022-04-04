@@ -1,3 +1,4 @@
+README.md
 setup.py
 dune/__init__.py
 dune/mock.py
@@ -11,3 +12,4 @@ dune/profiles/hernquist.py
 dune/profiles/kinematics.py
 dune/profiles/nfw.py
 dune/profiles/plummer.py
+dune/profiles/tmp_nfw2.py
